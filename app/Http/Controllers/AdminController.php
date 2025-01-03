@@ -144,6 +144,50 @@ class AdminController extends Controller
         return view('admin.category-edit', compact('category'));
     }
 
+    # category update #
+    public function category_update(Request $request){
+
+        $request->validate([
+            'name' => 'required',
+            'slug' => 'required|unique:categories,slug',
+            //'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'  
+        ]);
+
+        $Category = Category::find($request->id);
+        $Category->name = $request->name;
+        $Category->slug = Str::slug($request->slug);
+
+        if ($request->hasFile('image')) 
+        {
+            if(File::exists(public_path('uploads/categories').'/'.$Category->image)){
+                File::delete(public_path('uploads/categories').'/'.$Category->image);
+            }
+            $file = $request->file('image');
+            $extension = $file->getClientOriginalExtension();
+            $filname = time() . '.'.$extension;
+            $file->move('uploads/categories', $filname);
+            $Category->Image = $filname;
+        }
+
+            $Category->save();
+            return redirect()->route('admin.categories')->with('status', 'category has been updated successfully
+            ');
+
+    }
+
+
+    # delete category #
+    public function category_delete($id){
+        $category = category :: find($id);
+        if(File::exists(public_path('uploads/categories').'/'.$category->image)){
+            File::delete(public_path('uploads/categories').'/'.$category->image);
+        }
+        $category->delete();
+        return redirect()->route('admin.categories')->with('status', 'category has been deleted successfully!');
+
+
+    }
+
 
 
 
