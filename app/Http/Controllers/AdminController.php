@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\Product;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -172,9 +173,7 @@ class AdminController extends Controller
             $Category->save();
             return redirect()->route('admin.categories')->with('status', 'category has been updated successfully
             ');
-
     }
-
 
     # delete category #
     public function category_delete($id){
@@ -184,9 +183,21 @@ class AdminController extends Controller
         }
         $category->delete();
         return redirect()->route('admin.categories')->with('status', 'category has been deleted successfully!');
-
-
     }
+
+    # product #
+    public function products(){
+        $products = Product::orderby('created_at','DESC')->paginate(10);
+        return view('admin.products', compact('products'));
+    }
+
+    # product add #
+    public function product_add(){
+        $category  = category::select('id','name')->orderBy('name')->get();
+        $brand = Brand::select('id','name')->orderBy('name')->get();
+        return view('admin.product-add', compact('category','brand'));
+    }
+
 
 
 

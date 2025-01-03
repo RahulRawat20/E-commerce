@@ -1,4 +1,5 @@
 @extends('layouts.admin')
+@section('title', ' Admin / Edit Brands')
 @section('content')
 <div class="main-content-inner">
     <div class="main-content-wrap">
