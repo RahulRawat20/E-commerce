@@ -198,6 +198,114 @@ class AdminController extends Controller
         return view('admin.product-add', compact('category','brand'));
     }
 
+    # product store in database #
+    public function product_store(Request $request)
+    {
+        
+        // Validation
+        $request->validate([
+            'name' => 'required',
+            'slug' => 'required|unique:products,slug',
+            'category_id' => 'required',
+            'short_description' => 'required',
+            'description' => 'required',
+            'regular_price' => 'required',
+            'sale_price' => 'required',
+            'SKU' => 'required',
+            'stock_status' => 'required',
+            'featured' => 'required',
+            'quantity' => 'required', 
+            'image' => 'required|image', 
+            'brand_id' => 'required',
+        ]);
+
+        // Create a new product instance
+        $products = new Product();
+        $products->name = $request->name;
+        $products->slug = $request->slug;
+        $products->short_description = $request->short_description;
+        $products->description = $request->description;
+        $products->regular_price = $request->regular_price;
+        $products->sale_price = $request->sale_price;
+        $products->SKU = $request->SKU;
+        $products->stock_status = $request->stock_status;
+        $products->featured = $request->featured;
+        $products->quantity = $request->quantity;
+        $products->category_id = $request->category_id;
+        $products->brand_id = $request->brand_id;
+
+        // Handle image upload (optional)
+         $current_timestamp = Carbon::now()->timestamp;
+
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = $current_timestamp . '.' . $image->extension();
+            $this->GenerateProductThumbnailImage($image, $imageName);
+            $products->image = $imageName;
+        }
+
+        $gallery_arr = array();
+        $gallery_images = "";
+
+        $counter = 1;
+
+        if ($request->hasFile('images')) {
+            $allowedfileExtion = ['jpg', 'png', 'jpeg'];
+            $files = $request->file('images');
+
+            foreach ($files as $file) {
+                $gextension = $file->getClientOriginalExtension();
+                $gcheck = in_array($gextension, $allowedfileExtion);
+
+                if ($gcheck) {
+                    $gfileName = $current_timestamp . "_" . $counter . "." . $gextension;
+                    $this->GenerateProductThumbnailImage($file, $gfileName);
+                    array_push($gallery_arr, $gfileName);
+                }
+                $counter = $counter + 1;
+            }
+
+            $gallery_images = implode(",", $gallery_arr);
+        }
+
+        $products->images = $gallery_images;
+
+        // Save the product to the database
+        $products->save();
+
+        // Redirect with success message
+        return redirect()->route('admin.products')->with('status', 'Product has been added successfully');
+    }
+
+    public function GenerateProductThumbnailImage($image, $imageName)
+    {
+        
+        $destinationPathThumbnail = public_path('uploads/products/thumbnails');
+        $destinationPath = public_path('uploads/products');
+        $img = Image::read($image->path());
+        $img->cover(540, 689, "top");
+
+        $img->resize(540, 689, function($constraint) {
+            $constraint->aspectRatio();
+        })->save($destinationPath.'/'.$imageName);
+
+        $img->resize(104, 104, function($constraint) {
+            $constraint->aspectRatio();
+        })->save($destinationPathThumbnail.'/'.$imageName);
+    }
+
+
+    # product edit #
+    public function product_edit($id){
+        $product = Product::find($id);
+        $category  = category::select('id','name')->orderBy('name')->get();
+        $brand = Brand::select('id','name')->orderBy('name')->get();
+        return view('admin.product-edit', compact('product','category','brand'));
+
+    }
+
+   
+
 
 
 

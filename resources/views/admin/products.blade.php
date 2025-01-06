@@ -36,6 +36,9 @@
                 <a class="tf-button style-1 w208" href="{{ route('admin.product.add')}}"><i
                         class="icon-plus"></i>Add new</a>
             </div>
+            @if (Session::has('status'))
+                <div class="alert alert-success">{{ Session::get('status')}}</div>
+            @endif
             <div class="table-responsive">
                 <table class="table table-striped table-bordered">
                     <thead>
@@ -59,7 +62,7 @@
                             <td>{{ $product->id}}</td>
                             <td class="pname">
                                 <div class="image">
-                                    <img src="{{ asset('uploads/products/')}}1718623519.html" alt="" class="image">
+                                    <img src="{{ asset('uploads/products')}}/{{ $product->image}}" alt="" class="image">
                                 </div>
                                 <div class="name">
                                     <a href="#" class="body-title-2">{{ $product->name}}</a>
@@ -81,7 +84,7 @@
                                             <i class="icon-eye"></i>
                                         </div>
                                     </a>
-                                    <a href="#">
+                                    <a href="{{route('admin.product.edit',['id'=>$product->id])}}">
                                         <div class="item edit">
                                             <i class="icon-edit-3"></i>
                                         </div>

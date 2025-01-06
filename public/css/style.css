@@ -1894,7 +1894,7 @@ a:hover, a:focus {
   display: flex;
   align-items: center;
   justify-content: start;
-  gap: 20px;
+  gap: 10px;
 }
 .list-icon-function .item {
   font-size: 20px;
