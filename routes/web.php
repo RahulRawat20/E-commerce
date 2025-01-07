@@ -13,6 +13,9 @@ Auth::routes();
 
 Route::get('/', [HomeController::class, 'index'])->name('home.index');
 route::get('/shop',[Shopcontroller::class,'index'])->name('shop.index');
+route::get('/shop/{product_slug}',[Shopcontroller::class,'product_details'])->name('shop.products.details');
+
+
  
 // user auth
 Route::middleware(['auth'])->group(function () {
