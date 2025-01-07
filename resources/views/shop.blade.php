@@ -370,12 +370,12 @@
                     <div class="swiper-container background-img js-swiper-slider" data-settings='{"resizeObserver": true}'>
                     <div class="swiper-wrapper">
                         <div class="swiper-slide">
-                        <a href="{{route('shop.products.details',['product_slug'=>$product->sluggt])}}"><img loading="lazy" src="{{asset('uploads/products')}}/{{$product->image}}" width="330"
+                        <a href="{{route('shop.products.details',['product_slug'=>$product->slug])}}"><img loading="lazy" src="{{asset('uploads/products')}}/{{$product->image}}" width="330"
                             height="400" alt="{{$product->name}}" class="pc__img"></a>
                         </div>
                         <div class="swiper-slide">
                             @foreach (explode(",",$product->images) as $galary_image)
-                                <a href="{{route('shop.products.details',['product_slug'=>$product->sluggt])}}"><img loading="lazy" src="{{asset('uploads/products')}}/{{$galary_image}}"
+                                <a href="{{route('shop.products.details',['product_slug'=>$product->slug])}}"><img loading="lazy" src="{{asset('uploads/products')}}/{{$galary_image}}"
                                 width="330" height="400" alt="{{$product->name}}" class="pc__img"></a>
                             @endforeach
                         </div>
