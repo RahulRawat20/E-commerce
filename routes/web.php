@@ -2,6 +2,7 @@
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Cartcontroller;
 use App\Http\Controllers\Shopcontroller;
 //use Illuminate\Container\Attributes\Auth;
 use Illuminate\Support\Facades\Auth;
@@ -12,8 +13,15 @@ use App\Http\Middleware\AuthAdmin;
 Auth::routes();
 
 Route::get('/', [HomeController::class, 'index'])->name('home.index');
+//shop page //
 route::get('/shop',[Shopcontroller::class,'index'])->name('shop.index');
 route::get('/shop/{product_slug}',[Shopcontroller::class,'product_details'])->name('shop.products.details');
+
+// shoping cart //
+route::get('/cart',[Cartcontroller::class,'index'])->name('cart.index');
+route::post('/cart/add',[Cartcontroller::class,'add_to_cart'])->name('cart.add');
+
+
 
 
  
