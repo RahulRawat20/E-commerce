@@ -20,6 +20,10 @@ route::get('/shop/{product_slug}',[Shopcontroller::class,'product_details'])->na
 // shoping cart //
 route::get('/cart',[Cartcontroller::class,'index'])->name('cart.index');
 route::post('/cart/add',[Cartcontroller::class,'add_to_cart'])->name('cart.add');
+route::put('/cart/increase-quantity/{rowId}',[Cartcontroller::class,'increase_cart_quantity'])->name('cart.qty.increase');
+route::put('/cart/decrease-quantity/{rowId}',[Cartcontroller::class,'decrease_cart_quantity'])->name('cart.qty.decrease');
+route::delete('/cart/remove-cart/{rowId}',[Cartcontroller::class,'remove_cart'])->name('cart.item.remove');
+route::delete('/cart/clear',[Cartcontroller::class,'empty_cart'])->name('cart.empty');
 
 
 
