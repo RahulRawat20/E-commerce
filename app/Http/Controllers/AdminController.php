@@ -201,7 +201,7 @@ class AdminController extends Controller
     # product store in database #
     public function product_store(Request $request)
     {
-        
+        //dd($request->all());
         // Validation
         $request->validate([
             'name' => 'required',
