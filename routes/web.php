@@ -65,6 +65,9 @@ Route::middleware(['auth',AuthAdmin::class])->group(function () {
     route::get('/admin/product/{id}/edit',[AdminController::class,'product_edit'])->name('admin.product.edit');
     route::PUT('/admin/product/update',[AdminController::class,'product_update'])->name('admin.product.update');
     route::DELETE('/admin/product/{id}/delete',[AdminController::class,'product_delete'])->name('admin.product.delete');
+
+
+    Route::get('/get-refresh-token', [AdminController::class, 'GetRefreshtoken_to_AccessToken']);
     
     
 

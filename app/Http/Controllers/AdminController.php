@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\GetAccessToken;
+
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -426,7 +428,67 @@ class AdminController extends Controller
     
     }
 
-   
+    # Get access token  #
+    public function GetRefreshtoken_to_AccessToken(){
+
+        $redirect_uri = env('GOOGLE_REDIRECT');
+        $client_id = env('GOOGLE_CLIENT_ID');
+        $client_secret = env('GOOGLE_CLIENT_SECRET');
+        $refresh_token = env('GOOGLE_REFRESH_TOKEN');
+        
+        $curl = curl_init();
+        
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://oauth2.googleapis.com/token',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => http_build_query([
+                'client_id' => $client_id,
+                'client_secret' => $client_secret,
+                'refresh_token' => $refresh_token,
+                'grant_type' => 'refresh_token',
+            ]),
+            CURLOPT_HTTPHEADER => array(
+                'Content-Type: application/x-www-form-urlencoded'
+            ),
+        ));
+        
+        $response = curl_exec($curl);
+        
+        curl_close($curl);
+        
+        $response_data = json_decode($response, true);
+
+       // Check if we got the access token
+        if (isset($response_data['access_token'])) {
+            $access_token = $response_data['access_token'];
+            $expires_in = $response_data['expires_in'];
+
+            $accessTokenRecord = GetAccessToken::first();
+            if ($accessTokenRecord) {
+                $accessTokenRecord->update([
+                    'accesstoken' => $access_token,
+                    'expires_in' => $expires_in, 
+                ]);
+            } else {
+                // If no record exists, create a new one
+                GetAccessToken::create([
+                    'accesstoken' => $access_token,
+                    'expires_in' => $expires_in, 
+                ]);
+            }
+        } else {
+            
+            dd($response_data); 
+        }
+        
+    
+    }
 
 
 
