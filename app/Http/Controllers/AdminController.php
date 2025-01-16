@@ -186,6 +186,65 @@ class AdminController extends Controller
         $category->delete();
         return redirect()->route('admin.categories')->with('status', 'category has been deleted successfully!');
     }
+    #-----------------------------------------------------#
+     # Get access token  #
+     public function GetRefreshtoken_to_AccessToken(){
+
+        $redirect_uri = env('GOOGLE_REDIRECT');
+        $client_id = env('GOOGLE_CLIENT_ID');
+        $client_secret = env('GOOGLE_CLIENT_SECRET');
+        $refresh_token = env('GOOGLE_REFRESH_TOKEN');
+        
+        $curl = curl_init();
+        
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://oauth2.googleapis.com/token',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => http_build_query([
+                'client_id' => $client_id,
+                'client_secret' => $client_secret,
+                'refresh_token' => $refresh_token,
+                'grant_type' => 'refresh_token',
+            ]),
+            CURLOPT_HTTPHEADER => array(
+                'Content-Type: application/x-www-form-urlencoded'
+            ),
+        ));
+        
+        $response = curl_exec($curl);
+        
+        curl_close($curl);
+        
+        $response_data = json_decode($response, true);
+
+       // Check if we got the access token
+       if (isset($response_data['access_token'])) {
+        $access_token = $response_data['access_token'];
+        $record = GetAccessToken::first();
+            if ($record) {
+                $record->update([
+                    'accesstoken' => $access_token,
+                ]);
+            } else {
+                GetAccessToken::create([
+                    'accesstoken' => $access_token,
+                ]);
+            }
+            return response()->json($response_data);
+    } else {
+        dd($response_data); 
+    }
+    
+        
+    }
+
+   
 
     # product #
     public function products(){
@@ -273,7 +332,16 @@ class AdminController extends Controller
         $products->images = $gallery_images;
 
         // Save the product to the database
-        $products->save();
+       // $products->save();
+        
+        if ($products->save()) {
+            $this->sendToGoogleSheets($products);
+
+            return redirect()->route('admin.products')->with('status', 'Product has been added successfully');
+        } else {
+           
+            return redirect()->back()->with('error', 'Failed to save product. Please try again.');
+        }
 
         // Redirect with success message
         return redirect()->route('admin.products')->with('status', 'Product has been added successfully');
@@ -296,6 +364,74 @@ class AdminController extends Controller
         })->save($destinationPathThumbnail.'/'.$imageName);
     }
 
+     # Send product data to Google Sheets via API.
+ 
+    public function sendToGoogleSheets($product)
+    {
+  
+  
+        $accessToken = GetAccessToken::value('accesstoken');
+
+          
+            
+          $curl = curl_init();
+          
+          curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://sheets.googleapis.com/v4/spreadsheets/1NS7yCfD8Kqt1mIYBdf5RqrDykMiXGjoZu9gBWc48sKo/values/Sheet1!A1:append?valueInputOption=RAW',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS =>'{
+              "range": "Sheet1!A1",
+              "majorDimension": "ROWS",
+              "values": [
+                [
+                  "'.$product->name.'",
+                  "'.$product->slug.'",
+                  "'.$product->short_description.'",
+                  "'.$product->description.'",
+                  "'.$product->regular_price.'",
+                  "'.$product->sale_price.'",
+                  "'.$product->SKU.'",
+                  "'.$product->stock_status.'",
+                  "'.$product->quantity.'",
+                  "'.$product->category_id.'",
+                  "'.$product->brand_id.'"
+                ]
+              ]
+            }',
+            CURLOPT_HTTPHEADER => array(
+              "Authorization: Bearer $accessToken",
+              'Content-Type: application/json'
+            ),
+          ));
+          
+          $response = curl_exec($curl);
+          
+          curl_close($curl);
+         // echo $response;
+          
+          
+          $responseData = json_decode($response, true);
+          
+          if (isset($responseData['error'])) {
+            if (isset($responseData['error']['status']) && $responseData['error']['status'] == "UNAUTHENTICATED") {
+                $newAccessToken = $this->GetRefreshtoken_to_AccessToken();  // Refresh token
+                if ($newAccessToken) {
+                    // Retry your API request with the new token
+                    $this->sendToGoogleSheets($product);
+                } 
+            }
+        } else {
+            // Handle case where there's no error
+            return response()->json(['error' => 'No error information found in response.']);
+        }
+          
+    }
 
     # product edit #
     public function product_edit($id){
@@ -397,6 +533,7 @@ class AdminController extends Controller
 
         // Save the product to the database
         $products->save();
+        
 
         // Redirect with success message
         return redirect()->route('admin.products')->with('status', 'Product has been updated successfully');
@@ -428,67 +565,7 @@ class AdminController extends Controller
     
     }
 
-    # Get access token  #
-    public function GetRefreshtoken_to_AccessToken(){
-
-        $redirect_uri = env('GOOGLE_REDIRECT');
-        $client_id = env('GOOGLE_CLIENT_ID');
-        $client_secret = env('GOOGLE_CLIENT_SECRET');
-        $refresh_token = env('GOOGLE_REFRESH_TOKEN');
-        
-        $curl = curl_init();
-        
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://oauth2.googleapis.com/token',
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => http_build_query([
-                'client_id' => $client_id,
-                'client_secret' => $client_secret,
-                'refresh_token' => $refresh_token,
-                'grant_type' => 'refresh_token',
-            ]),
-            CURLOPT_HTTPHEADER => array(
-                'Content-Type: application/x-www-form-urlencoded'
-            ),
-        ));
-        
-        $response = curl_exec($curl);
-        
-        curl_close($curl);
-        
-        $response_data = json_decode($response, true);
-
-       // Check if we got the access token
-        if (isset($response_data['access_token'])) {
-            $access_token = $response_data['access_token'];
-            $expires_in = $response_data['expires_in'];
-
-            $accessTokenRecord = GetAccessToken::first();
-            if ($accessTokenRecord) {
-                $accessTokenRecord->update([
-                    'accesstoken' => $access_token,
-                    'expires_in' => $expires_in, 
-                ]);
-            } else {
-                // If no record exists, create a new one
-                GetAccessToken::create([
-                    'accesstoken' => $access_token,
-                    'expires_in' => $expires_in, 
-                ]);
-            }
-        } else {
-            
-            dd($response_data); 
-        }
-        
-    
-    }
+   
 
 
 
