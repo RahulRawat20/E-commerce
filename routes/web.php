@@ -4,6 +4,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Cartcontroller;
 use App\Http\Controllers\Shopcontroller;
+use App\Http\Controllers\WishlistController;
 //use Illuminate\Container\Attributes\Auth;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +25,11 @@ route::put('/cart/increase-quantity/{rowId}',[Cartcontroller::class,'increase_ca
 route::put('/cart/decrease-quantity/{rowId}',[Cartcontroller::class,'decrease_cart_quantity'])->name('cart.qty.decrease');
 route::delete('/cart/remove-cart/{rowId}',[Cartcontroller::class,'remove_cart'])->name('cart.item.remove');
 route::delete('/cart/clear',[Cartcontroller::class,'empty_cart'])->name('cart.empty');
+
+route::post('/whishlist/add',[WishlistController::class,'add_to_wishlist'])->name('wishlist.add');
+route::get('/wishlist',[WishlistController::class,'index'])->name('wishlist.index');
+route::DELETE('/wishlist/item/remove/{rowId}',[WishlistController::class,'remove_wishlist'])->name('wishlist.item.remove');
+route::DELETE('/wishlist/clear',[WishlistController::class,'empty_wishlist'])->name('wishlist.items.clear');
 
 
 
@@ -66,7 +72,7 @@ Route::middleware(['auth',AuthAdmin::class])->group(function () {
     route::PUT('/admin/product/update',[AdminController::class,'product_update'])->name('admin.product.update');
     route::DELETE('/admin/product/{id}/delete',[AdminController::class,'product_delete'])->name('admin.product.delete');
 
-
+    #--Google api--#
     Route::get('/get-refresh-token', [AdminController::class, 'GetRefreshtoken_to_AccessToken']);
     
     
