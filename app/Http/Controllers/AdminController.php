@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\Coupon;
 use App\Models\Product;
 use App\Models\GetAccessToken;
 
@@ -240,11 +241,8 @@ class AdminController extends Controller
     } else {
         dd($response_data); 
     }
-    
-        
+         
     }
-
-   
 
     # product #
     public function products(){
@@ -563,6 +561,12 @@ class AdminController extends Controller
         $products->delete();
         return redirect()->route('admin.products')->with('status', 'Product has been deleted successfully');
     
+    }
+
+    #   Get coupons 
+    Public function coupons(){
+        $coupons = Coupon::orderBy('expiry_data','desc')->paginate(12);
+        return view('admin.coupons',compact('coupons'));
     }
 
    

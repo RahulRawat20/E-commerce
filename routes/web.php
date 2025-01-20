@@ -31,6 +31,8 @@ route::get('/wishlist',[WishlistController::class,'index'])->name('wishlist.inde
 route::DELETE('/wishlist/item/remove/{rowId}',[WishlistController::class,'remove_wishlist'])->name('wishlist.item.remove');
 route::DELETE('/wishlist/clear',[WishlistController::class,'empty_wishlist'])->name('wishlist.items.clear');
 
+route::post('/wishlist/move-to-cart/{rowId}',[WishlistController::class,'move_to_cart'])->name('wishlist.move.to.cart');
+
 
 
 
@@ -74,6 +76,9 @@ Route::middleware(['auth',AuthAdmin::class])->group(function () {
 
     #--Google api--#
     Route::get('/get-refresh-token', [AdminController::class, 'GetRefreshtoken_to_AccessToken']);
+
+    #---Get coupons ---#
+    route::get('/admin/coupons',[AdminController::class,'coupons'])->name('admin.coupons');
     
     
 
