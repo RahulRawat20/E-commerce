@@ -45,4 +45,10 @@ class Cartcontroller extends Controller
         Cart::instance('cart')->destroy();
         return redirect()->back();
     }
+
+    # aplly coupon code functionalty
+    public function apply_coupon_code(){
+
+    }
+
 }
