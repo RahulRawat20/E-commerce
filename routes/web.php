@@ -26,15 +26,18 @@ route::put('/cart/decrease-quantity/{rowId}',[Cartcontroller::class,'decrease_ca
 route::delete('/cart/remove-cart/{rowId}',[Cartcontroller::class,'remove_cart'])->name('cart.item.remove');
 route::delete('/cart/clear',[Cartcontroller::class,'empty_cart'])->name('cart.empty');
 
+// coupon aplied on cart //
+route::post('/cart/apply-coupon',[Cartcontroller::class,'apply_coupon_code'])->name('cart.coupon.apply');
+route::delete('/cart/remove-coupon',[Cartcontroller::class,'remove_coupon_code'])->name('cart.coupon.remove');
+
+
+// whishlist //
 route::post('/whishlist/add',[WishlistController::class,'add_to_wishlist'])->name('wishlist.add');
 route::get('/wishlist',[WishlistController::class,'index'])->name('wishlist.index');
 route::DELETE('/wishlist/item/remove/{rowId}',[WishlistController::class,'remove_wishlist'])->name('wishlist.item.remove');
 route::DELETE('/wishlist/clear',[WishlistController::class,'empty_wishlist'])->name('wishlist.items.clear');
 
 route::post('/wishlist/move-to-cart/{rowId}',[WishlistController::class,'move_to_cart'])->name('wishlist.move.to.cart');
-
-
-
 
  
 // user auth
