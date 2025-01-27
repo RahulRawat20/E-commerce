@@ -69,39 +69,37 @@
               </thead>
               <tbody>
                 @foreach ($order->orderItems as $item )
-                    
-                @endforeach
                 <tr>
                   <td>
                     {{$item->product->name}} x {{$item->quantity}}
                   </td>
-                  <td>
+                  <td class="text-right">
                     ${{$item->price}}
                   </td>
                 </tr>
-                
+                @endforeach
               </tbody>
             </table>
             <table class="checkout-totals">
               <tbody>
                 <tr>
                   <th>SUBTOTAL</th>
-                  <td>${{$order->subtotal}}</td>
+                  <td class="text-right">${{$order->subtotal}}</td>
                 </tr>
                 <tr>
                     <th>DISCOUNT</th>
-                    <td>${{$order->discount}}</td>
+                    <td class="text-right">${{$order->discount}}</td>
                   </tr>
                 <tr>
                   <td>Free shipping</td>
                 </tr>
                 <tr>
                   <th>VAT</th>
-                  <td>${{$order->tax}}</td>
+                  <td class="text-right">${{$order->tax}}</td>
                 </tr>
                 <tr>
                   <th>TOTAL</th>
-                  <td>${{$order->total}}</td>
+                  <td class="text-right">${{$order->total}}</td>
                 </tr>
               </tbody>
             </table>
