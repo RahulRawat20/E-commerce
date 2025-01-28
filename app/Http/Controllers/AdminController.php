@@ -8,7 +8,7 @@ use App\Models\Category;
 use App\Models\Coupon;
 use App\Models\Product;
 use App\Models\GetAccessToken;
-
+use App\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -614,6 +614,14 @@ class AdminController extends Controller
             return redirect()->route('admin.coupons')->with('status', 'Coupon has been deleted
             successfully');
         }
+    # order
+    public function orders(){
+      
+
+        $orders = Order::orderBy('created_at', 'desc')->paginate(12);
+       // dd($orders);
+        return view('admin.orders', compact('orders'));
+    }
 
 
 
