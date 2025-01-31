@@ -9,6 +9,8 @@ use App\Models\Coupon;
 use App\Models\Product;
 use App\Models\GetAccessToken;
 use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -617,10 +619,18 @@ class AdminController extends Controller
     # order
     public function orders(){
       
-
-        $orders = Order::orderBy('created_at', 'desc')->paginate(12);
-       // dd($orders);
+        $orders = Order::orderby('created_at','DESC')->paginate(10);
+        //dd($orders);
         return view('admin.orders', compact('orders'));
+    }
+
+    # order details
+    public function order_details($order_id){
+        $order = Order::find($order_id);
+        $order_Items = OrderItem::where('order_id',$order_id)->orderBy('id')->paginate(10);
+        $transactions = Transaction::where('order_id',$order_id)->first();
+        return view('admin.order-details', compact('order', 'order_Items','transactions'));
+
     }
 
 
