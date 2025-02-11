@@ -48,6 +48,8 @@ route::get('/order-confirmation',[Cartcontroller::class,'order_confirmation'])->
 // user auth
 Route::middleware(['auth'])->group(function () {
     route::get('/account-dashboard',[UserController ::class,'index'])->name('user.index');
+    route::get('/account-orders',[UserController ::class,'orders'])->name('user.orders');
+    route::get('/account-orders/{order_id}/details',[UserController ::class,'order_details'])->name('user.order.details');
     
 });
 
@@ -98,6 +100,7 @@ Route::middleware(['auth',AuthAdmin::class])->group(function () {
     #---Get orders ---#
     route::get('/admin/orders',[AdminController::class,'orders'])->name('admin.orders');
     route::get('/admin/order/{order_id}/details',[AdminController::class,'order_details'])->name('admin.order.details');
+    route::put('/admin/order/update-status',[AdminController::class,'update_order_status'])->name('admin.order.status.update');
     
     
     

@@ -33,7 +33,11 @@
                 <a class="tf-button style-1 w208" href="{{route('admin.orders')}}">Back</a>
             </div>
             <div class="table-responsive">
-                <table class="table table-striped table-bordered">
+                @if (Session::has('status'))
+                <div class="alert alert-success">{{Session::get('status')}}</div>
+                    
+                @endif
+                <table class="table table-striped table-bordered table-transaction">
                     <tr>
                         <th>Order No</th>
                         <td class="text-center">{{ $order->id}}</td>
@@ -52,15 +56,17 @@
                     </tr>
                     <tr>
                         <th>Order Status</th>
-                        <td colspan="5">
-                            @if ($order->status == 'delivered')
-                                <span class="badge badge-success">Delivered</span>
-                            @elseif ($order->status == 'canceled')
-                                <span class="badge badge-danger">Canceled</span>
-                            @else
-                                <span class="badge badge-primary">Ordered</span>
-                            @endif
-                    </td>
+                       
+                            <td colspan="3">
+                                @if ($order->status == 'delivered')
+                                    <span class="badge badge-success" style="background-color: green; color: white;">Delivered</span>
+                                @elseif ($order->status == 'canceled')
+                                    <span class="badge badge-danger" style="background-color: red; color: white;">Canceled</span>
+                                @else
+                                    <span class="badge badge-primary" style="background-color: blue; color: white;">Ordered</span>
+                                @endif
+                            </td>
+                            
                     </tr>
                 </table>
             </div>  
@@ -178,6 +184,31 @@
                 </tbody>
             </table>
         </div>
+
+        {{--  --}}
+        <div class="wg-box mt-5">
+            <h5>Update Order Status</h5>
+            <form action="{{route('admin.order.status.update')}}" method="post">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="order_id" value="{{$order->id}}">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="select">
+                            <select name="order_status" id="order_status">
+                                <option value="ordered" {{ $order->status == 'ordered' ? 'selected' : '' }}>Ordered</option>
+                                <option value="delivered" {{ $order->status == 'delivered' ? 'selected' : '' }}>Delivered</option>
+                                <option value="canceled" {{ $order->status == 'canceled' ? 'selected' : '' }}>Canceled</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary tf-button w208">Update Status</button>
+                    </div>
+                </div>
+            </form>
+        </div>      
+
     </div>
 </div>
 @endsection

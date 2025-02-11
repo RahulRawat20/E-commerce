@@ -633,6 +633,43 @@ class AdminController extends Controller
 
     }
 
+    # update order status
+    public function update_order_status(Request $request)
+{
+    // dd($request->all()); // Uncomment this line to check request data
+    
+    $order = Order::find($request->order_id);
+    if (!$order) {
+        return back()->withErrors('Order not found.');
+    }
+    
+    // Set the status
+    $order->status = $request->order_status; // Now using 'order_status' as in the form
+    
+    // Handle specific status-related fields
+    if ($request->order_status == 'delivered') {
+        $order->delivered_date = Carbon::now();
+    } elseif ($request->order_status == 'canceled') {
+        $order->canceled_date = Carbon::now();
+    }
+    
+    // Save the order
+    $order->save();
+    
+    // Additional logic for transactions (if delivered)
+    if ($request->order_status == 'delivered') {
+        $transactions = Transaction::where('order_id', $request->order_id)->first();
+        if ($transactions) {
+            $transactions->status = 'approved';
+            $transactions->save();
+        }
+    }
+    
+    return back()->with('status', 'Order status has been updated successfully.');
+}
+
+    
+
 
 
    
