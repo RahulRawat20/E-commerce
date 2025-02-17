@@ -10,21 +10,34 @@ use App\Models\Product;
 use App\Models\GetAccessToken;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Slide;
 use App\Models\Transaction;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Intervention\Image\Laravel\Facades\Image;
+
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
-
+use PHPUnit\Metadata\Covers;
 
 class AdminController extends Controller
 {
     //
     public function index(){
-        return view('admin.index');
+        $orders = Order::orderBY('created_at','DESC')->get()->take(10);
+        $dashboard_datas = DB::select("Select sum(total) As TotalAmount,
+        sum(if(status='ordered', total,0)) As TotalorderedAmount,
+        sum(if(status='delivered', total, 0)) As TotalDeliveredAmount,
+        sum(if(status='canceled', total,0)) As TotalCanceledAmount,
+        Count(*) As Total,
+        sum(if(status='ordered',1,0)) As TotalOrdered,
+        sum(if(status='delivered',1,0)) As TotalDelivered,
+        sum(if(status='canceled',1,0)) As TotalCanceled
+        From Orders");
+        return view('admin.index', compact('orders','dashboard_datas'));
     }
 
     # Brands #
@@ -635,38 +648,135 @@ class AdminController extends Controller
 
     # update order status
     public function update_order_status(Request $request)
-{
-    // dd($request->all()); // Uncomment this line to check request data
-    
-    $order = Order::find($request->order_id);
-    if (!$order) {
-        return back()->withErrors('Order not found.');
-    }
-    
-    // Set the status
-    $order->status = $request->order_status; // Now using 'order_status' as in the form
-    
-    // Handle specific status-related fields
-    if ($request->order_status == 'delivered') {
-        $order->delivered_date = Carbon::now();
-    } elseif ($request->order_status == 'canceled') {
-        $order->canceled_date = Carbon::now();
-    }
-    
-    // Save the order
-    $order->save();
-    
-    // Additional logic for transactions (if delivered)
-    if ($request->order_status == 'delivered') {
-        $transactions = Transaction::where('order_id', $request->order_id)->first();
-        if ($transactions) {
-            $transactions->status = 'approved';
-            $transactions->save();
+    {
+        // dd($request->all()); // Uncomment this line to check request data
+        
+        $order = Order::find($request->order_id);
+        if (!$order) {
+            return back()->withErrors('Order not found.');
         }
+        
+        // Set the status
+        $order->status = $request->order_status; // Now using 'order_status' as in the form
+        
+        // Handle specific status-related fields
+        if ($request->order_status == 'delivered') {
+            $order->delivered_date = Carbon::now();
+        } elseif ($request->order_status == 'canceled') {
+            $order->canceled_date = Carbon::now();
+        }
+        
+        // Save the order
+        $order->save();
+        
+        // Additional logic for transactions (if delivered)
+        if ($request->order_status == 'delivered') {
+            $transactions = Transaction::where('order_id', $request->order_id)->first();
+            if ($transactions) {
+                $transactions->status = 'approved';
+                $transactions->save();
+            }
+        }
+        
+        return back()->with('status', 'Order status has been updated successfully.');
     }
-    
-    return back()->with('status', 'Order status has been updated successfully.');
-}
+
+    // slide
+    public function slides(){
+        $slides = Slide::orderBy('id','DESC')->paginate(12);
+        return view('admin.slides', compact('slides'));
+
+    }
+
+    // add new slide
+    public function slide_add(){
+        return view('admin.slide-add');
+    }
+    // save new slide
+    public function slide_store(Request $request)
+    {
+        $request ->validate([
+            'tagline' => 'required',
+            'title' => 'required',
+            'subtitle' => 'required',
+            'status' => 'required',
+            'link'  => 'required',
+            'image' => 'required|mimes:jpg,jpeg,png|max:2048',    
+        ]);
+        $slide = new Slide();
+        $slide->tagline = $request->tagline;
+        $slide->title = $request->title;
+        $slide->subtitle = $request->subtitle;
+        $slide->status = $request->status;
+        $slide->link = $request->link;
+
+         if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $extension = $file->getClientOriginalExtension();
+                $filname = time() . '.'.$extension;
+                $file->move('uploads/slides', $filname);
+                $slide->Image = $filname;
+            }
+
+        $slide->save();
+        return redirect()->route('admin.slides')->with('status', 'Slide has been added successfully.');
+
+
+    }
+
+    // edit slide
+    public function slide_edit($id){
+        $slide = Slide::find($id);
+        return view('admin.slide-edit', compact('slide'));
+    }
+
+    // slide update
+    public function slide_update(Request $request){
+        $request ->validate([
+            'tagline' => 'required',
+            'title' => 'required',
+            'subtitle' => 'required',
+            'status' => 'required',
+            'link'  => 'required',
+            'image' => 'mimes:jpg,jpeg,png|max:2048',    
+        ]);
+        $slide =  Slide::find($request->id);
+        $slide->tagline = $request->tagline;
+        $slide->title = $request->title;
+        $slide->subtitle = $request->subtitle;
+        $slide->status = $request->status;
+        $slide->link = $request->link;
+
+        if ($request->hasFile('image')) 
+        {
+            if(File::exists(public_path('uploads/slides').'/'.$slide->image)){
+                File::delete(public_path('uploads/slides').'/'.$slide->image);
+            }
+            $file = $request->file('image');
+            $extension = $file->getClientOriginalExtension();
+            $filname = time() . '.'.$extension;
+            $file->move('uploads/slides', $filname);
+            $slide->Image = $filname;
+        }
+
+        $slide->save();
+        return redirect()->route('admin.slides')->with('status', 'Slide Updated successfully.');
+    }
+
+    // slide delete
+    public function slide_delete($id){
+        $slide = Slide::find($id);
+        if(File::exists(public_path('uploads/slides').'/'.$slide->image)){
+            File::delete(public_path('uploads/slides').'/'.$slide->image);
+        }
+        $slide->delete();
+        return redirect()->route('admin.slides')->with('status', 'slides has been deleted successfully!');
+
+    }
+
+
+
+
 
     
 

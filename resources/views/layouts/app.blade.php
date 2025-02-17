@@ -273,7 +273,7 @@
   
         <div class="logo">
           <a href="{{route('home.index')}}">
-            <img src="{{ asset('assets/images/logo.png') }}" alt="Uomo" class="logo__image d-block" />
+            <img src="{{ asset('assets/images/lgo.PNG') }}" alt="Uomo" class="logo__image d-block" />
           </a>
         </div>
   
