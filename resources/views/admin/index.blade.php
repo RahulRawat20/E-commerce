@@ -136,52 +136,52 @@
 
             <div class="wg-box">
                 <div class="flex items-center justify-between">
-                    <h5>Earnings revenue</h5>
-                    <div class="dropdown default">
-                        <button class="btn btn-secondary dropdown-toggle" type="button"
-                            data-bs-toggle="dropdown" aria-haspopup="true"
-                            aria-expanded="false">
-                            <span class="icon-more"><i class="icon-more-horizontal"></i></span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a href="javascript:void(0);">This Week</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0);">Last Week</a>
-                            </li>
-                        </ul>
-                    </div>
+                    <h5>Monthly revenue</h5>
                 </div>
                 <div class="flex flex-wrap gap40">
                     <div>
                         <div class="mb-2">
                             <div class="block-legend">
                                 <div class="dot t1"></div>
-                                <div class="text-tiny">Revenue</div>
+                                <div class="text-tiny">Total</div>
                             </div>
                         </div>
                         <div class="flex items-center gap10">
-                            <h4>$37,802</h4>
-                            <div class="box-icon-trending up">
-                                <i class="icon-trending-up"></i>
-                                <div class="body-title number">0.56%</div>
-                            </div>
+                            <h4>${{$TotalAmount}}</h4>
+                           
                         </div>
                     </div>
                     <div>
                         <div class="mb-2">
                             <div class="block-legend">
                                 <div class="dot t2"></div>
-                                <div class="text-tiny">Order</div>
+                                <div class="text-tiny">Pending</div>
                             </div>
                         </div>
                         <div class="flex items-center gap10">
-                            <h4>$28,305</h4>
-                            <div class="box-icon-trending up">
-                                <i class="icon-trending-up"></i>
-                                <div class="body-title number">0.56%</div>
+                            <h4>${{$TotalOrderedAmount}}</h4>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="mb-2">
+                            <div class="block-legend">
+                                <div class="dot t2"></div>
+                                <div class="text-tiny">Delivered</div>
                             </div>
+                        </div>
+                        <div class="flex items-center gap10">
+                            <h4>${{$TotalDeliveredAmount}}</h4>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="mb-2">
+                            <div class="block-legend">
+                                <div class="dot t2"></div>
+                                <div class="text-tiny">Canceled</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap10">
+                            <h4>${{$TotalCanceledAmount}}</h4>
                         </div>
                     </div>
                 </div>
@@ -265,3 +265,104 @@
 
 </div>
 @endsection
+
+ @push('scripts')
+   <script>
+        (function ($) {
+
+            var tfLineChart = (function () {
+
+                var chartBar = function () {
+
+                    var options = {
+                        series: [{
+                            name: 'Total',
+                            data: [{{$Amountm}}]
+                        }, {
+                            name: 'Pending',
+                            data: [{{$OrderAmountm}}]
+                        },
+                        {
+                            name: 'Delivered',
+                            data: [{{$DeliveredAmountm}}]
+                        }, {
+                            name: 'Canceled',
+                            data: [{{$CanceledAmountm}}]
+                        }],
+                        chart: {
+                            type: 'bar',
+                            height: 325,
+                            toolbar: {
+                                show: false,
+                            },
+                        },
+                        plotOptions: {
+                            bar: {
+                                horizontal: false,
+                                columnWidth: '10px',
+                                endingShape: 'rounded'
+                            },
+                        },
+                        dataLabels: {
+                            enabled: false
+                        },
+                        legend: {
+                            show: false,
+                        },
+                        colors: ['#2377FC', '#FFA500', '#078407', '#FF0000'],
+                        stroke: {
+                            show: false,
+                        },
+                        xaxis: {
+                            labels: {
+                                style: {
+                                    colors: '#212529',
+                                },
+                            },
+                            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        },
+                        yaxis: {
+                            show: false,
+                        },
+                        fill: {
+                            opacity: 1
+                        },
+                        tooltip: {
+                            y: {
+                                formatter: function (val) {
+                                    return "$ " + val + ""
+                                }
+                            }
+                        }
+                    };
+
+                    chart = new ApexCharts(
+                        document.querySelector("#line-chart-8"),
+                        options
+                    );
+                    if ($("#line-chart-8").length > 0) {
+                        chart.render();
+                    }
+                };
+
+                /* Function ============ */
+                return {
+                    init: function () { },
+
+                    load: function () {
+                        chartBar();
+                    },
+                    resize: function () { },
+                };
+            })();
+
+            jQuery(document).ready(function () { });
+
+            jQuery(window).on("load", function () {
+                tfLineChart.load();
+            });
+
+            jQuery(window).on("resize", function () { });
+        })(jQuery);
+    </script>  
+@endpush
