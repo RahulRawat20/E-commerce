@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\contact;
 use App\Models\Coupon;
 use App\Models\Product;
 use App\Models\GetAccessToken;
@@ -816,6 +817,30 @@ class AdminController extends Controller
         $slide->delete();
         return redirect()->route('admin.slides')->with('status', 'slides has been deleted successfully!');
 
+    }
+    
+
+    // get conatc-us message
+    public function contacts(){
+        $contacts = contact::orderBy('created_at','DESC')->paginate(10);
+        return view('admin.contacts', compact('contacts'));
+    }
+
+    public function contact_delete($id){
+        $contacts = contact::find($id);
+        $contacts->delete();
+        return redirect()->route('admin.contacts')->with('status', 'Message has been deleted successfully!');
+
+    }
+
+    
+
+    // Searching products
+    public function search(Request $request)
+    {
+        $query = $request->input('query');
+        $results = Product::where('name', 'like', '%' . $query . '%')->take(8)->get();
+        return response()->json($results);
     }
 
 

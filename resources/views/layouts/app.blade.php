@@ -27,6 +27,8 @@
       integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw=="
       crossorigin="anonymous" referrerpolicy="no-referrer">
       @stack("style")
+
+      
 </head>
 <body class="gradient-bg">
     <svg class="d-none">
@@ -261,6 +263,37 @@
       .logo__image {
         max-width: 220px;
       }
+
+        .product-item {
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
+          gap: 15px;
+          transition: all 0.3s ease;
+          padding-right: 5px;
+        }
+
+        .product-item .image { /* Or .product-item.image if that's how you intended it */
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 50px;
+          height: 50px;
+          gap: 10px;
+          flex-shrink: 0;
+          padding: 5px;
+          border-radius: 10px;
+          background: #EFF4F8;
+        }
+
+        #box-content-search li {
+          list-style: none;
+        }
+
+        #box-content-search .product-item { /* Or #box-content-search.product-item if that's how you intended it */
+          margin-bottom: 10px;
+        }
+      
     </style>
     <div class="header-mobile header_sticky">
       <div class="container d-flex align-items-center h-100">
@@ -320,7 +353,7 @@
                 <a href="{{route('cart.index')}}" class="navigation__link">Cart</a>
               </li>
               <li class="navigation__item">
-                <a href="about.html" class="navigation__link">About</a>
+                <a href="{{route('home.about')}}" class="navigation__link">About</a>
               </li>
               <li class="navigation__item">
                 <a href="contact.html" class="navigation__link">Contact</a>
@@ -409,10 +442,10 @@
                 <a href="{{route('cart.index')}}" class="navigation__link">Cart</a>
               </li>
               <li class="navigation__item">
-                <a href="about.html" class="navigation__link">About</a>
+                <a href="{{route('home.about')}}" class="navigation__link">About</a>
               </li>
               <li class="navigation__item">
-                <a href="contact.html" class="navigation__link">Contact</a>
+                <a href="{{route('home.contact')}}" class="navigation__link">Contact</a>
               </li>
             </ul>
           </nav>
@@ -433,8 +466,7 @@
                 <form action="#" method="GET" class="search-field container">
                   <p class="text-uppercase text-secondary fw-medium mb-4">What are you looking for?</p>
                   <div class="position-relative">
-                    <input class="search-field__input search-popup__input w-100 fw-medium" type="text"
-                      name="search-keyword" placeholder="Search products" />
+                    <input class="search-field__input search-popup__input w-100 fw-medium" type="text" name="search-keyword" id="search-input" placeholder="Search products" />
                     <button class="btn-icon search-popup__submit" type="submit">
                       <svg class="d-block" width="20" height="20" viewBox="0 0 20 20" fill="none"
                         xmlns="http://www.w3.org/2000/svg">
@@ -445,20 +477,7 @@
                   </div>
   
                   <div class="search-popup__results">
-                    <div class="sub-menu search-suggestion">
-                      <h6 class="sub-menu__title fs-base">Quicklinks</h6>
-                      <ul class="sub-menu__list list-unstyled">
-                        <li class="sub-menu__item"><a href="shop2.html" class="menu-link menu-link_us-s">New Arrivals</a>
-                        </li>
-                        <li class="sub-menu__item"><a href="#" class="menu-link menu-link_us-s">Dresses</a></li>
-                        <li class="sub-menu__item"><a href="shop3.html" class="menu-link menu-link_us-s">Accessories</a>
-                        </li>
-                        <li class="sub-menu__item"><a href="#" class="menu-link menu-link_us-s">Footwear</a></li>
-                        <li class="sub-menu__item"><a href="#" class="menu-link menu-link_us-s">Sweatshirt</a></li>
-                      </ul>
-                    </div>
-  
-                    <div class="search-result row row-cols-5"></div>
+                    <ul id="box-content-search"> 
                   </div>
                 </form>
               </div>
@@ -676,6 +695,65 @@
     <script src="{{ asset('js/sweetalert.min.js') }}"></script>
     <script src="{{ asset('assets/js/plugins/swiper.min.js') }}"></script>
     <script src="{{ asset('assets/js/plugins/countdown.js') }}"></script>
+    <script>
+     $(function(){
+          $("#search-input").on("keyup", function(){
+              var search_query = $(this).val();
+              
+              if(search_query.length > 2){
+                  $.ajax({
+                      type: "GET",
+                      url: "{{ route('home.search') }}",
+                      dataType: "json",
+                      data: {query: search_query},
+                      success: function(data){
+                          console.log(data);
+
+                          // Clear previous results to avoid appending on top of old ones
+                          $("#box-content-search").empty();
+
+                          if (data && data.length > 0) {
+                              $.each(data, function(index, item){
+                                  var url = "{{ route('shop.products.details', ['product_slug' => 'product_slug_pls']) }}";
+                                  var link = url.replace('product_slug_pls', item.slug);
+
+                                  var productItem = `
+                                      <li>
+                                          <ul>
+                                              <li class="product-item gap14 mb-10">
+                                                  <div class="image no-bg">
+                                                      <img src="{{ asset('uploads/products/thumbnails') }}/${item.image}" alt="${item.name}">
+                                                  </div>
+                                                  <div class="flex items-center justify-between gap20 flex-grow">
+                                                      <div class="name">
+                                                          <a href="${link}" class="body-text">${item.name}</a>
+                                                      </div>
+                                                  </div>
+                                              </li>
+                                              <li class="mb-10">
+                                                  <div class="divider"></div>
+                                              </li>
+                                          </ul>
+                                      </li>
+                                  `;
+
+                                  $("#box-content-search").append(productItem);
+                              });
+                          } else {
+                              // Handle case where no results are found
+                              $("#box-content-search").append('<li>No products found.</li>');
+                          }
+                      },
+                      error: function(){
+                          // Handle any error that occurs during the AJAX request
+                          console.error("Error during search request.");
+                      }
+                  });
+              }
+          });
+      });
+
+    </script>
     <script src="{{ asset('assets/js/theme.js') }}"></script>
     @stack("scripts")
 </body>
